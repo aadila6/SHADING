@@ -64,6 +64,7 @@ public:
     vector<N,T> operator/(const T scalar) const;
     vector<N,T>& operator*=(const T scalar);
     vector<N,T>& operator/=(const T scalar);
+    
     T& dot(const vector<N, T> &v) const;
     vector<N,T> cross(const vector<N, T> &v) const;
     vector<N+1,T> homogeneous() const;
