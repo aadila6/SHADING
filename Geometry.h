@@ -67,6 +67,18 @@ struct Phong{
     vec3f eyef, P, N, R, V;
 };
 
+//0:Empty, 1:red, 2:green, 3:blue
+struct MegaPixel{
+    char mpixel[3][3];
+    MegaPixel(){
+        for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){
+                mpixel[i][j] = 'e';
+            }
+        }
+    }
+};
+
 class Polygon {
     //Center of mass is 0 respect to polygon itself
     //But position vector is the centroid from the viewPort

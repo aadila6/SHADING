@@ -41,7 +41,7 @@ constexpr int WINDOW_WIDTH= GRID_WIDTH*PIXEL_SIZE;
 void init();
 void idle();
 void display();
-void draw_pix(int x, int y);
+void draw_pix(int x, int y, RGB color);
 void draw();
 void reshape(int width, int height);
 void key(unsigned char ch, int x, int y);
@@ -55,11 +55,14 @@ std::vector<Polygon> polygonList;
 std::vector<Polygon> cPolygonList;
 void drawLineDDA(std::vector<float> start, std::vector<float> end);
 RGB calculateRGB(float y1, float y2, float y3, RGB color1, RGB color2);
-
+void GShading(Point v1, Point v2, Point v3);
+MegaPixel halfToning(Point x);
+void GShadHalfToningOn(Point a, Point b, Point c);
+void drawMegaPixel(Point point);
 /*initialize gl stufff*/
 int main(int argc, char **argv)
 {
-    inputFileName = "testScene.txt";
+    inputFileName = "bunny.txt";
     readinput(inputFileName, polygonList);
     
     glutInit(&argc, argv);
@@ -173,10 +176,10 @@ void readinput(char *filename, std::vector<Polygon> &polygons){
             x = std::stof(inputX);
             y = std::stof(inputY);
             z = std::stof(inputZ);
-            vec3f point(x,y,z);
+            vec3f point(x*150,y*150,z*150);
             vertices.push_back(point);
         }
-        //reading vertex COLORS
+        //reading vertex COLORSs
         for (int j=0; j<num; j++){
             float x, y, z;
             std::string inputX, inputY, inputZ;
@@ -243,6 +246,26 @@ void readinput(char *filename, std::vector<Polygon> &polygons){
 //         outputFile << std::endl;
 //     }
 // }
+void drawMegaPixel(Point lol){
+    //Point ht(vec3f(30,30,30),RGB(0,200,200));
+    MegaPixel pix = halfToning(lol);
+    int x = lol.point.x();
+    int y = lol.point.y();
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            if(pix.mpixel[i][j] == 'r'){
+                RGB drawColor(255,0,0);
+                draw_pix(x*3+j,y*3+i,drawColor);
+            }else if(pix.mpixel[i][j] == 'g'){
+                RGB drawColor(0,255,0);
+                draw_pix(x*3+j,y*3+i,drawColor);
+            }else if(pix.mpixel[i][j] == 'b'){
+                RGB drawColor(0,0,255);
+                draw_pix(x*3+j,y*3+i,drawColor);
+            }
+        }
+    }
+}
 
 void display()
 {
@@ -250,8 +273,16 @@ void display()
     glLoadIdentity();
     //drawSplitLines();
     
-    glutSwapBuffers();
+    Point c(vec3f(20,50,0),RGB(0,0,255)); // blue
+    Point b(vec3f(10,10,0),RGB(0,255,0));  // green
+    Point a(vec3f(30,10,0),RGB(255,0,0)); // red
+    GShadHalfToningOn(a,b,c);
+    GShading(a,b,c);
+    //GShadHalfToningOn(polygonList[0].vertices[0],polygonList[0].vertices[2],polygonList[0].vertices[1]);
+
+    //drawMegaPixel();
     //checks for opengl errors
+    glutSwapBuffers();
     check();
     // polygonList.clear();
     // for(int u=0;u<cPolygonList.size();u++){
@@ -260,45 +291,249 @@ void display()
     // }
     //writeFile(inputFileName, polygonList);
 }
-void draw_pix(int x, int y)
+
+void draw_pix(int x, int y, RGB color)
 {
     glBegin(GL_POINTS);
-    glColor3f(0.41, 0.4, 0.4);
+    //glColor3f(0.41, 0.4, 0.4);
+    glColor3f(color.c0/255, color.c1/255, color.c2/255);
     glVertex3f(x + .5, y + .5, 0);
     glEnd();
 }
 
-void drawLineDDA(std::vector<float> start, std::vector<float> end)
-{
-    int startX = (int)(start[0] + 0.5);
-    int startY = (int)(start[1] + 0.5);
-    int endX = (int)(end[0] + 0.5);
-    int endY = (int)(end[1] + 0.5);
-    
-    int dX = endX - startX;
-    int dY = endY - startY;
-    int steps, k;
-    float incX, incY;
-    float x = (float)startX;
-    float y = (float)startY;
-    
-    if(fabs(dX) > fabs(dY)) {
-        steps = fabs(dX);
-    } else {
-        steps = fabs(dY);
+//will sort all vec2fs and return in order of v1,v2,v3
+void sortYlocation(Point &a, Point &b,Point &c){
+    if(a.point.y()<b.point.y()){
+        Point tmp(a.point,a.intensity);
+        a = b;
+        b = tmp;
     }
-    incX = (float)dX / (float)steps;
-    incY = (float)dY / (float)steps;
-    
-    loadBuffer[(int)(x + GRID_WIDTH * y + 0.5)] = true;
-    for(int i = 0; i < steps; i++) {
-        x += incX;
-        y += incY;
-        int roundX = (int)(x+0.5);
-        int roundY = (int)(y+0.5);
-        loadBuffer[roundX + GRID_WIDTH * roundY] = true;
+    if(a.point.y()<c.point.y()){
+        Point tmp(a.point,a.intensity);
+        a=c;
+        c = tmp;
+    }
+    if(b.point.y()<c.point.y()){
+        Point tmp(b.point,b.intensity);
+        b=c;
+        c=tmp;
     }
 }
+
+int rdf(float x){
+    return (int)(x+0.5);
+}
+
+//USING DDA + LINEAR INTERPOLATION
+void GShading(Point a, Point b, Point c){
+    Point v1 = a;
+    Point v2 = b;
+    Point v3 = c;
+    sortYlocation(v1,v2,v3);
+    //sortYlocation(v1, v2, v3);
+    int dX1 = (int)(v2.point.x() - v1.point.x());
+    int dX2 = (int)(v3.point.x() - v1.point.x());
+    int dY1 = (int)(v2.point.y() - v1.point.y());
+    int dY2 = (int)(v3.point.y() - v2.point.y());//will use this later
+    int dY3 = (int)(v3.point.y() - v1.point.y());
+    float incX1, incX2;
+    float x1 = (float)v1.point.x();
+    float x2 = (float)v1.point.x();
+    float y = (float)v1.point.y();
+    int steps = fabs(dY1);
+    incX1 = (float)dX1 / (float)steps;
+    incX2 = (float)dX2 / (float)fabs(dY3);
+    RGB midstore(0,0,0);
+    //from p1 - p2 && p1 - p3
+    for(int i = 0; i < steps; i++) {
+        x1 += incX1;
+        x2 += incX2;
+        y -= 1;
+        //Assume I have the intensity from PHONG
+        RGB I1 = calculateRGB(v1.point.y(),v2.point.y(),y,v1.intensity,v2.intensity);
+        RGB I2 = calculateRGB(v1.point.y(),v3.point.y(),y,v1.intensity,v3.intensity);
+        RGB lala(0, 0, 255);
+        std::cout<<"O1: "<<v1.intensity.c0<<" "<<v1.intensity.c1<<" "<<v1.intensity.c2 <<std::endl;
+        std::cout<<"I1: "<<I1.c0<<" "<<I1.c1<<" "<<I1.c2 <<std::endl;
+        std::cout<<"I2: "<<I2.c0<<" "<<I2.c1<<" "<<I2.c2 <<std::endl;
+        draw_pix(x1,y,I1);
+        draw_pix(x2,y,I2);
+        for(int j = 1; j<= x2 - x1; j++){
+            RGB Ibetween = calculateRGB(x1,x2,x1+j,I1,I2);
+            //RGB Ibetween = calIntense(I1,I2,x1+j,x1,x2);
+            draw_pix(x1+j,y,Ibetween);
+        }
+        if(i == steps -1){
+            midstore = I2;
+        }
+    }
+    float midX = x2;
+    float midY = v2.point.y();
+    dX1 = (int)(v3.point.x() - v2.point.x());
+    //dX2 = (int)(v3.point.x() - midX);
+    steps = fabs(dY2);
+    incX1 = (float)dX1 / (float)steps;
+    //incX2 = (float)dX2 / (float)steps;
+    x1 = (float)v2.point.x();
+    x2 = midX;
+    //y = midY;
+    for(int i = 0; i < steps; i++) {
+        x1 += incX1;
+        x2 += incX2;
+        y -= 1;
+        //Assume I have the intensity from PHONG
+        RGB I1 = calculateRGB(v2.point.y(),v3.point.y(),y,v2.intensity,v3.intensity);
+        RGB I2 = calculateRGB(midY,v3.point.y(),y,midstore,v3.intensity);
+        RGB lala(0, 0, 255);
+        draw_pix(x1,y,I1);
+        draw_pix(x2,y,I2);
+        for(int j = 1; j<= x2 - x1; j++){
+            RGB Ibetween = calculateRGB(x1,x2,x1+j,I1,I2);
+            //RGB Ibetween = calIntense(I1,I2,x1+j,x1,x2);
+            draw_pix(x1+j,y,Ibetween);
+        }
+    }
+}
+void GShadHalfToningOn(Point a, Point b, Point c){
+    Point v1 = a;
+    Point v2 = b;
+    Point v3 = c;
+    sortYlocation(v1,v2,v3);
+    //sortYlocation(v1, v2, v3);
+    int dX1 = (int)(v2.point.x() - v1.point.x());
+    int dX2 = (int)(v3.point.x() - v1.point.x());
+    int dY1 = (int)(v2.point.y() - v1.point.y());
+    int dY2 = (int)(v3.point.y() - v2.point.y());//will use this later
+    int dY3 = (int)(v3.point.y() - v1.point.y());
+    float incX1, incX2;
+    float x1 = (float)v1.point.x();
+    float x2 = (float)v1.point.x();
+    float y = (float)v1.point.y();
+    int steps = fabs(dY1);
+    incX1 = (float)dX1 / (float)steps;
+    incX2 = (float)dX2 / (float)fabs(dY3);
+    RGB midstore(0,0,0);
+    //from p1 - p2 && p1 - p3
+    for(int i = 0; i < steps; i++) {
+        x1 += incX1;
+        x2 += incX2;
+        y -= 1;
+        //Assume I have the intensity from PHONG
+        RGB I1 = calculateRGB(v1.point.y(),v2.point.y(),y,v1.intensity,v2.intensity);
+        RGB I2 = calculateRGB(v1.point.y(),v3.point.y(),y,v1.intensity,v3.intensity);
+        //RGB lala(0, 0, 255);
+        std::cout<<"O1: "<<v1.intensity.c0<<" "<<v1.intensity.c1<<" "<<v1.intensity.c2 <<std::endl;
+        std::cout<<"I1: "<<I1.c0<<" "<<I1.c1<<" "<<I1.c2 <<std::endl;
+        std::cout<<"I2: "<<I2.c0<<" "<<I2.c1<<" "<<I2.c2 <<std::endl;
+        
+        Point la(vec3f(x1,y,0),I1);
+        drawMegaPixel(la);
+        Point lo(vec3f(x2,y,0),I2);
+        drawMegaPixel(lo);
+        for(int j = 1; j<= x2 - x1; j++){
+            RGB Ibetween = calculateRGB(x1,x2,x1+j,I1,I2);
+            //RGB Ibetween = calIntense(I1,I2,x1+j,x1,x2);
+            Point lala(vec3f(x1+j,y,0),Ibetween);
+            drawMegaPixel(lala);
+            //draw_pix(x1+j,y,Ibetween);
+        }
+        if(i == steps -1){
+            midstore = I2;
+        }
+    }
+    float midX = x2;
+    float midY = v2.point.y();
+    dX1 = (int)(v3.point.x() - v2.point.x());
+    //dX2 = (int)(v3.point.x() - midX);
+    steps = fabs(dY2);
+    incX1 = (float)dX1 / (float)steps;
+    //incX2 = (float)dX2 / (float)steps;
+    x1 = (float)v2.point.x();
+    x2 = midX;
+    //y = midY;
+    for(int i = 0; i < steps; i++) {
+        x1 += incX1;
+        x2 += incX2;
+        y -= 1;
+        //Assume I have the intensity from PHONG
+        RGB I1 = calculateRGB(v2.point.y(),v3.point.y(),y,v2.intensity,v3.intensity);
+        RGB I2 = calculateRGB(midY,v3.point.y(),y,midstore,v3.intensity);
+        //RGB lala(0, 0, 255);
+        Point la(vec3f(x1,y,0),I1);
+        drawMegaPixel(la);
+        Point lo(vec3f(x2,y,0),I2);
+        drawMegaPixel(lo);
+        for(int j = 1; j<= x2 - x1; j++){
+            RGB Ibetween = calculateRGB(x1,x2,x1+j,I1,I2);
+            //RGB Ibetween = calIntense(I1,I2,x1+j,x1,x2);
+            //draw_pix(x1+j,y,Ibetween);
+            Point lala(vec3f(x1+j,y,0),Ibetween);
+                       drawMegaPixel(lala);
+        }
+    }
+}
+int findOn(float max){
+    int on = 0;
+    if(max<0.5){
+        if(max >= 0.1 && max < 0.2){
+            on = 1;
+        }else if(max >= 0.2 && max < 0.3){
+            on = 2;
+        }else if(max >= 0.3 && max < 0.4){
+            on = 3;
+        }else{
+            on = 4;
+        }
+    }else{
+        if(max >= 0.5 && max < 0.6){
+            on = 5;
+        }else if(max >= 0.6 && max < 0.7){
+            on = 6;
+        }else if(max >= 0.7 && max < 0.8){
+            on = 7;
+        }else if(max >= 0.8 && max < 0.9){
+            on = 8;
+        }else{
+            on = 9;
+        }
+    }
+    return on;
+}
+//find the max of rgb and devide each rgb value by max;
+MegaPixel halfToning(Point x){
+    float r = x.intensity.c0/255;
+    float g = x.intensity.c1/255;
+    float b = x.intensity.c2/255;
+    float max = fmax(r,fmax(g,b));
+    int on = findOn(max);
+    int numRed = rdf(r*on /(r+g+b));
+    int numGreen = rdf(g*on /(r+g+b));
+    int numBlue = rdf(b*on /(r+g+b));
+    
+    std::vector<char> array;
+    for(int i =0;i<numRed;i++){
+        array.push_back('r');
+    }
+    for(int i =0;i<numGreen;i++){
+        array.push_back('g');
+    }
+    for(int i =0;i<numBlue;i++){
+        array.push_back('b');
+    }
+    
+    MegaPixel pixel;
+    int taken = 0;
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            if(taken<array.size()){
+                pixel.mpixel[i][j] = array[taken];
+                taken++;
+            }
+        }
+    }
+    return pixel;
+}
+
 /*Gets called when display size changes, including initial craetion of the display*/
 void reshape(int width, int height)
 {
