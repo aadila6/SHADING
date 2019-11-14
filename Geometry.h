@@ -20,16 +20,16 @@ struct Edge
 };
 struct RGB
 {
-    float c0, c1, c2;
+    float r, g, b;
     RGB(){
-        this->c0 = 0;
-        this->c1 = 0;
-        this->c2 = 0;
+        this->r = 0;
+        this->g = 0;
+        this->b = 0;
     }
     RGB(float c0, float c1, float c2) {
-        this->c0 = c0;
-        this->c1 = c1;
-        this->c2 = c2;
+        this->r = c0;
+        this->g = c1;
+        this->b = c2;
     }
 };
 struct Point
@@ -60,12 +60,7 @@ struct Face
     
 };
 
-struct Phong{
-    float ambient = 0.5;
-    RGB kd;
-    float ks = 1;
-    vec3f eyef, P, N, R, V;
-};
+
 
 //0:Empty, 1:red, 2:green, 3:blue
 struct MegaPixel{

@@ -1,6 +1,6 @@
 
 #include "Geometry.h"
-
+//TODO: POLYGON
 Polygon::Polygon(std::vector<Point> vert, std::vector<Face> faces, std::vector<float>specs) {
     this -> count = vert.size();
     this -> edgeCount = edges.size();
@@ -29,7 +29,7 @@ void Polygon::printPolygon() {
     std::cout<<std::endl;
 }
 void Polygon::updateNormalforfaces(){
-    for(int i = 0;i < faces.size(); i++) {
+    for(int i = 0;i < faces.size()-1; i++) {
         Face &f = this->faces[i];
         vec3f a = this->vertices[f.f1].point - this->vertices[f.f0].point;
         vec3f b = this->vertices[f.f2].point - this->vertices[f.f0].point;
@@ -47,4 +47,5 @@ void Polygon::updateCentroid() {
     }
     this->position = {xtotal/(float)(this->count), ytotal/(float)(this->count),  ztotal/(float)(this->count)};
 }
+
 
