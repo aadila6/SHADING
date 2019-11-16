@@ -32,9 +32,9 @@
 #include "vector.h"
 #include "matrix.h"
 char *inputFileName;
-constexpr int PIXEL_SIZE = 3;
-constexpr int GRID_WIDTH= 200;
-constexpr int GRID_HEIGHT = 200;
+constexpr int PIXEL_SIZE = 2;
+constexpr int GRID_WIDTH= 400;
+constexpr int GRID_HEIGHT = 400;
 constexpr int WINDOW_HEIGHT = GRID_HEIGHT*PIXEL_SIZE;
 constexpr int WINDOW_WIDTH= GRID_WIDTH*PIXEL_SIZE;
 
@@ -65,11 +65,11 @@ Point swapCoordsxz(Point &v1);
 /*initialize gl stufff*/
 int main(int argc, char **argv)
 {
-    inputFileName = "cia.txt";
+    inputFileName = "bunny.txt";
     readinput(inputFileName, polygonList);
     
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitDisplayMode(GLUT_RGB);
     /*initialize variables, allocate memory, create buffers, etc. */
     //create window of size (win_width x win_height
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -179,7 +179,7 @@ void readinput(char *filename, std::vector<Polygon> &polygons){
             x = std::stof(inputX);
             y = std::stof(inputY);
             z = std::stof(inputZ);
-            vec3f point(x*200,y*200,z*200);
+            vec3f point(x*GRID_WIDTH,y*GRID_WIDTH,z*GRID_WIDTH);
             vertices.push_back(point);
         }
         //reading vertex COLORSs
@@ -276,56 +276,69 @@ void display()
     glLoadIdentity();
     //drawSplitLines();
     
-    Point c(vec3f(40,40,0),RGB(0,0,255)); // blue
-    Point b(vec3f(20,20,0),RGB(0,255,0)); // green
-    Point a(vec3f(70,10,0),RGB(255,0,0)); // red
-    //     Point c(vec3f(0.375*200, 0.625*200, 0.625*200),RGB(0,0,255)); // blue
-    //     Point b(vec3f(0.625*200, 0.375*200, 0.625*200),RGB(0,255,0));  // green
-    //     Point a(vec3f(0.625*200, 0.625*200, 0.625*200),RGB(255,0,0)); // red
-    
-    //    draw_pix(0.375*200, 0.375*200,RGB(255,0,0));
-    //    draw_pix(0.625*200, 0.375*200,RGB(255,0,0));
-    //    draw_pix(0.375*200, 0.625*200,RGB(255,0,0));
-    
-    //GShading(a,c,b);
-    
-    //    std::cout<<"***********************************"<<std::endl;
-    
-    //    GShadHalfToningOn(b,a,c);
-    //    GShading(b,c,a);
-    //    GShading(a,c,b);
-    //    GShading(c,a,b);
-    //    GShading(c,b,a);
-    
-//    int faceNum = 12;
-//    draw_pix(polygonList[0].vertices[polygonList[0].faces[faceNum].f0-1].point.x(),
-//             polygonList[0].vertices[polygonList[0].faces[faceNum].f0-1].point.y(),RGB(255,0,0));
-//    draw_pix(polygonList[0].vertices[polygonList[0].faces[faceNum].f1-1].point.x(),
-//             polygonList[0].vertices[polygonList[0].faces[faceNum].f1-1].point.y(),RGB(255,0,0));
-//    draw_pix(polygonList[0].vertices[polygonList[0].faces[faceNum].f2-1].point.x(),
-//             polygonList[0].vertices[polygonList[0].faces[faceNum].f2-1].point.y(),RGB(255,0,0));
+//    Point c(vec3f(0.375*200, 0.625*200, 0.625*200),RGB(0,0,255)); // blue
+//    Point b(vec3f(0.625*200, 0.375*200, 0.625*200),RGB(0,255,0));  // green
+//    Point a(vec3f(0.625*200, 0.625*200, 0.625*200),RGB(255,0,0)); // red
 //
+//    goShading(a,c,b,'x');
+//    PhongModel temp(a,vec3f(1,0,0), vec3f(1,1,1),vec3f(20,20,20),1);
+//
+//    Debugging for everysingle triangle!!
+//    int faceNum = 6;
+//    draw_pix(polygonList[0].vertices[polygonList[0].faces[faceNum].f0-1].point.y(),
+//        polygonList[0].vertices[polygonList[0].faces[faceNum].f0-1].point.z(),RGB(255,0,0));
+//    draw_pix(polygonList[0].vertices[polygonList[0].faces[faceNum].f1-1].point.y(),
+//        polygonList[0].vertices[polygonList[0].faces[faceNum].f1-1].point.z(),RGB(255,0,0));
+//    draw_pix(polygonList[0].vertices[polygonList[0].faces[faceNum].f2-1].point.y(),
+//        polygonList[0].vertices[polygonList[0].faces[faceNum].f2-1].point.y(),RGB(255,0,0));
+////
 //    goShading(polygonList[0].vertices[polygonList[0].faces[faceNum].f0-1],
 //              polygonList[0].vertices[polygonList[0].faces[faceNum].f1-1],
-//              polygonList[0].vertices[polygonList[0].faces[faceNum].f2-1]);
+//              polygonList[0].vertices[polygonList[0].faces[faceNum].f2-1],'y');
 
-        std::cout<<"***********************************"<<std::endl;
-        for(int i = 0; i<polygonList[0].faces.size(); i++){
+        //std::cout<<"***********************************"<<std::endl;
+//
+        for(int i = 0; i<20; i++){
+            draw_pix(polygonList[0].vertices[polygonList[0].faces[i].f0-1].point.y(),
+                    polygonList[0].vertices[polygonList[0].faces[i].f0-1].point.z(),RGB(255,0,0));
+                draw_pix(polygonList[0].vertices[polygonList[0].faces[i].f1-1].point.y(),
+                    polygonList[0].vertices[polygonList[0].faces[i].f1-1].point.z(),RGB(255,0,0));
+                draw_pix(polygonList[0].vertices[polygonList[0].faces[i].f2-1].point.y(),
+                    polygonList[0].vertices[polygonList[0].faces[i].f2-1].point.y(),RGB(255,0,0));
+            //
                 goShading(polygonList[0].vertices[polygonList[0].faces[i].f0-1],
-                         polygonList[0].vertices[polygonList[0].faces[i].f1-1],
-                         polygonList[0].vertices[polygonList[0].faces[i].f2-1],'y');
-    //       std::cout<<"Vertex : "<<polygonList[0].faces[i].f0<<" "<<polygonList[0].faces[i].f1<<" "<<polygonList[0].faces[i].f2 <<std::endl;
+                          polygonList[0].vertices[polygonList[0].faces[i].f1-1],
+                          polygonList[0].vertices[polygonList[0].faces[i].f2-1],'y');
         }
     
     
+//    for(int i = 0; i<polygonList[0].faces.size(); i++){
+//        draw_pix(polygonList[0].vertices[polygonList[0].faces[i].f0-1].point.y(),
+//            polygonList[0].vertices[polygonList[0].faces[i].f0-1].point.z(),RGB(255,0,0));
+//        draw_pix(polygonList[0].vertices[polygonList[0].faces[i].f1-1].point.y(),
+//            polygonList[0].vertices[polygonList[0].faces[i].f1-1].point.z(),RGB(255,0,0));
+//        draw_pix(polygonList[0].vertices[polygonList[0].faces[i].f2-1].point.y(),
+//            polygonList[0].vertices[polygonList[0].faces[i].f2-1].point.y(),RGB(255,0,0));
+//    }
     
-    
-    //GShading(a,b,c);
-    //GShadHalfToningOn(polygonList[0].vertices[0],polygonList[0].vertices[2],polygonList[0].vertices[1]);
-    
+//        for(int i = 0; i<polygonList[0].faces.size(); i++){
+//            goShading(polygonList[0].vertices[polygonList[0].faces[i].f0-1],
+//                     polygonList[0].vertices[polygonList[0].faces[i].f1-1],
+//                     polygonList[0].vertices[polygonList[0].faces[i].f2-1],'z');
+//            //glFlush();
+//            glutSwapBuffers();
+//        }
+//
+//        for(int i = 0; i<polygonList[1].faces.size(); i++){
+//                   goShading(polygonList[1].vertices[polygonList[1].faces[i].f0-1],
+//                            polygonList[1].vertices[polygonList[1].faces[i].f1-1],
+//                            polygonList[1].vertices[polygonList[1].faces[i].f2-1],'z');
+//        }
+
     //drawMegaPixel();
     //checks for opengl errors
     glutSwapBuffers();
+    //glFlush();
     check();
     // polygonList.clear();
     // for(int u=0;u<cPolygonList.size();u++){
@@ -392,7 +405,7 @@ void goShading(Point a, Point b, Point c, char mode){
     Point v1 = a;
     Point v2 = b;
     Point v3 = c;
-    sortYlocation(v1,v2,v3);
+    
     if(mode == 'y'){
         v1 = swapCoordsyz(v1);
         v2 = swapCoordsyz(v2);
@@ -402,6 +415,7 @@ void goShading(Point a, Point b, Point c, char mode){
         v2 = swapCoordsxz(v2);
         v3 = swapCoordsxz(v3);
     }
+    sortYlocation(v1,v2,v3);
     //two case, v1.y=v2.y or v2.y = v3.y
     int dX1 = (int)(v2.point.x() - v1.point.x());
     int dX2 = (int)(v3.point.x() - v1.point.x());
@@ -419,9 +433,9 @@ void goShading(Point a, Point b, Point c, char mode){
     if(dY1 == 0){ //Case I: v1.y = v2.y where dY1 = 0
         x1 = (float)v1.point.x();
         x2 = (float)v2.point.x();
-        incX1 = (float)dX2 / (float)fabs(dY2); //1-3
-        incX2 = (float)dX3 / (float)fabs(dY3);//2-3
-        int steps = fabs(dY2);
+        incX1 = (float)dX2 / (float)abs(dY2); //1-3
+        incX2 = (float)dX3 / (float)abs(dY3);//2-3
+        int steps = abs(dY2);
         for(int i =0; i<steps; i++){
             x1 += incX1;
             x2 += incX2;
@@ -447,10 +461,10 @@ void goShading(Point a, Point b, Point c, char mode){
     }else if(dY3 == 0){ //Case II: v2.y = v3.y
         x1 = (float)v1.point.x();
         x2 = (float)v1.point.x();
-        incX1 = (float)dX1 / (float)fabs(dY1);
-        incX2 = (float)dX2 / (float)fabs(dY2);
+        incX1 = (float)dX1 / (float)abs(dY1);
+        incX2 = (float)dX2 / (float)abs(dY2);
         float y = (float)v1.point.y();
-        steps = fabs(dY1);
+        steps = abs(dY1);
         RGB midstore(0,0,0);
         for(int i = 0; i < steps; i++) {
             x1 += incX1;
@@ -461,7 +475,7 @@ void goShading(Point a, Point b, Point c, char mode){
             RGB I2 = calculateRGB(v1.point.y(),v3.point.y(),y,v1.intensity,v3.intensity);
             draw_pix(x1,y,I1);
             draw_pix(x2,y,I2);
-            std::cout<<"CASE II: "<<x1<<" "<<y<<" "<<x2 <<" "<<y<<std::endl;
+            
             for(int j = 1; j<= fabs(x2 - x1); j++){
                 if(x2>x1){
                     RGB Ibetween = calculateRGB(x1,x2,x1+j,I1,I2);
@@ -474,13 +488,12 @@ void goShading(Point a, Point b, Point c, char mode){
                 }
             }
         }
-        
     }else{
-        steps = fmin(fabs(dY1),fabs(dY2));
+        steps = std::min(abs(dY1), abs(dY2));
         x1 = (float)v1.point.x();
         x2 = (float)v1.point.x();
-        incX1 = (float)dX1 / (float)fabs(dY1);
-        incX2 = (float)dX2 / (float)fabs(dY2);
+        incX1 = (float)dX1 / (float)abs(dY1);
+        incX2 = (float)dX2 / (float)abs(dY2);
         float y = (float)v1.point.y();
         RGB midstore(0,0,0);
         for(int i = 0; i < steps; i++) {
@@ -509,7 +522,7 @@ void goShading(Point a, Point b, Point c, char mode){
             }
         }
             float midY = v2.point.y();
-            steps = fabs(dY3);
+            steps = abs(dY3);
             incX1 = (float)dX3 / (float)steps;
             x1 = (float)v2.point.x();
 //            y = midY;
