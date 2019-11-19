@@ -4,18 +4,20 @@ SID#: 916186665
 
 ### Steps to use my Shading Program  
 Step 1: make  
+
 Step 2: ./main  
-Step 3: Determind which file to read. 
-Which file would you like to read and see?  
-Cube_and_icosahedron file Enter 'c' 
-Bunny file Enter 'b'
-Your choice is:  (Type in 'c' or 'b' for reading the file input).
+
+Step 3: Determind which file to read.  
+Which file would you like to read and see?   
+Cube_and_icosahedron file Enter 'c'  
+Bunny file Enter 'b'. 
+Your choice is:  (Type in 'c' or 'b' for reading the file input).  
 
 Step 4:  
 Please select one of options  for your operation: 
 1. Flat Shading 
-2. Phong + Shading
-3. HalfToning + Shading
+2. Phong + Shading  
+3. HalfToning + Shading  
 4. Exit 
 
 ##### if choice is 1:  
