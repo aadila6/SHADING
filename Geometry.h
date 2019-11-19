@@ -1,6 +1,7 @@
 #include "vector.h"
 #include "matrix.h"
 #include <vector>
+using namespace std;
 typedef mmm::vector<2, float> vec2f;
 typedef mmm::vector<3, float> vec3f;
 typedef mmm::vector<2, int> vec2i;
@@ -52,19 +53,20 @@ struct Face
 {
     int f0, f1, f2;
     vec3f normal;
+    float spectNum;
     Face(int f0, int f1, int f2) : normal()
     {
-        this->f0=(f0); 
-        this->f1=(f1); 
+        this->f0=(f0);
+        this->f1=(f1);
         this->f2=(f2);
     }
     
 };
 
 struct PhongModel{
-    float ambient;
+    RGB ambient;
     RGB kd;
-    float ks;
+    RGB ks;
     float IL;
     vec3f fPoint;
     vec3f pPoint;
@@ -75,49 +77,57 @@ struct PhongModel{
     vec3f vVector;
     float K;
     float n;
+    RGB phongrgb;
     PhongModel(){
-        this->ambient = 0.5;
+        this->ambient = {5,5,5};
         this->kd = {0, 0, 0};
-        this->ks = 0.5;
-        this->IL = 0.8;
+        this->ks = {255,255,255};
+        this->IL = 0.2;
         this->pPoint = {0, 0, 0};
         this->lPoint = {1, 1, 0};
-        this->K = 0.5;
+        this->K = 20;
         this->n = 1;
         this->lVector = lPoint - pPoint;
-        this->rVector =
         this->vVector = fPoint - pPoint;
     }
-    PhongModel(Point dot, vec3f facenormal,vec3f frontPoint, vec3f light, float spec){
-        this->ambient = 0.5;
-        this->kd = dot.intensity;
-        this->ks = 0.5;
+    
+    PhongModel(Point dot, vec3f facenormal,vec3f frontPoint, vec3f light, float spec, RGB amb){
+        this->ambient = amb;
+        this->kd = dot.intensity; //
+        this->ks = {1,0,0}; //color of light source
         this->IL = 0.8;
         this->fPoint = frontPoint;
         this->pPoint = dot.point;
         this->lPoint = light;
         this->nVector = facenormal;
-        this->lVector = light - dot.point;
-        this-> rVector ;
-        this->vVector = this->fPoint - pPoint;
-        float K = 0.5;
-        float n = spec;
-        RGB phongInten(1,1,1);
-        calculatePhong(dot);
+        this->lVector = (lPoint - pPoint).normalized();
+        vec3f ntwo = nVector*2.0;
+        float num = ntwo.dot(lVector);
+        this->rVector = ((nVector*num) - lVector).normalized();
+        this->vVector = (fPoint - pPoint).normalized();
+        this->K = 0.5;
+        this->n = spec;
+        this->phongrgb = calculatePhong(dot);
     }
+    
     RGB calculatePhong(Point dot){
         float rnumber = 0;
         float gnumber = 0;
         float bnumber = 0;
-        rnumber = ambient + IL*(kd.r*(lVector.dot(nVector)) +pow(ks*(rVector.dot(vVector)),n) )/(vVector.norm() * K);
-        std::cout<<rnumber<<std::endl;
-        gnumber = ambient + IL*(kd.g*(lVector.dot(nVector)) +pow(ks*(rVector.dot(vVector)),n) )/(vVector.norm() * K);
-        std::cout<<gnumber<<std::endl;
-        bnumber = ambient + IL*(kd.b*(lVector.dot(nVector)) +pow(ks*(rVector.dot(vVector)),n) )/(vVector.norm() * K);
-        std::cout<<bnumber<<std::endl;
-        RGB value(rnumber,gnumber,bnumber);
+        rnumber = ambient.r + IL*(kd.r*(lVector.dot(nVector)) + pow(ks.r*(rVector.dot(vVector)),n) )/((vVector).norm()+0.5);
+        gnumber = ambient.g + IL*(kd.g*(lVector.dot(nVector)) +pow(ks.g*(rVector.dot(vVector)),n) )/((vVector).norm()  + K);
+        bnumber = ambient.b + IL*(kd.b*(lVector.dot(nVector)) +pow(ks.b*(rVector.dot(vVector)),n) )/((vVector).norm()  + K);
+        if(abs(rnumber) > 1){
+            rnumber = 1;
+        }
+        if(abs(gnumber) > 1){
+            gnumber = 1;
+        }
+        if(abs(bnumber) > 1){
+            bnumber = 1;
+        }
+        RGB value(abs(rnumber),abs(gnumber),abs(bnumber));
         return value;
-        
     }
 };
 
@@ -152,4 +162,12 @@ public:
     void updateNormalforfaces();
     Polygon(){};
     Polygon(std::vector<Point> vert, std::vector<Face> faces, std::vector<float>specs);
+    void updateSpectwithfaces();
+    std::vector<int> sortZ();
+    std::vector<int> sortX();
+    std::vector<int> sortY();
+    float getZMin(Face face);
+    float getYMin(Face face);
+    float getXMin(Face face);
+
 };

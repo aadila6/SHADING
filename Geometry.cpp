@@ -18,6 +18,7 @@ Polygon::Polygon(std::vector<Point> vert, std::vector<Face> faces, std::vector<f
         this->specs.push_back(specs[k]);
     }
     this->updateNormalforfaces();
+    this->updateSpectwithfaces();
     //this -> updateCentroid();
 }
 
@@ -46,6 +47,93 @@ void Polygon::updateCentroid() {
         ztotal += this->vertices[i].point.y();
     }
     this->position = {xtotal/(float)(this->count), ytotal/(float)(this->count),  ztotal/(float)(this->count)};
+}
+void Polygon::updateSpectwithfaces(){
+    if(faces.size()==specs.size()){
+        
+        for(int i=0;i<faces.size();i++){
+            faces[i].spectNum = this->specs[i];
+        }
+    }else{
+        std::cout<<"Facenum didnt match spectNum!!!"<<std::endl;
+    }
+}
+float Polygon:: getZMin(Face face){
+    Point a = this->vertices[face.f0];
+    Point b = this->vertices[face.f1];
+    Point c = this->vertices[face.f2];
+    return fmin(a.point.z(),fmin(b.point.z(),c.point.z()));
+}
+float Polygon:: getXMin(Face face){
+    Point a = this->vertices[face.f0];
+    Point b = this->vertices[face.f1];
+    Point c = this->vertices[face.f2];
+    return fmin(a.point.x(),fmin(b.point.x(),c.point.x()));
+}
+float Polygon:: getYMin(Face face){
+    Point a = this->vertices[face.f0];
+    Point b = this->vertices[face.f1];
+    Point c = this->vertices[face.f2];
+    return fmin(a.point.y(),fmin(b.point.y(),c.point.y()));
+}
+
+
+std::vector<int> Polygon::sortZ() {
+    int i, index;
+    float min;
+    std::vector<std::pair<float, int>> pairList;
+    pairList.clear();
+    std::vector<int> res;
+    res.clear();
+
+    for (index = 0; index < faces.size(); index++) {
+        min = getZMin(faces[index]);
+        pairList.push_back(std::make_pair(min, index));
+    }
+    sort(pairList.begin(), pairList.end(), std::greater<std::pair<float,int>>());
+//    sort(pairList.begin(), pairList.end());
+    for (i = 0 ; i < faces.size(); i++){
+        res.push_back(pairList[i].second);
+    }
+    return res;
+}
+std::vector<int> Polygon::sortY() {
+    int i, index;
+    float min;
+     std::vector<std::pair<float, int>> pairList;
+       pairList.clear();
+       std::vector<int> res;
+       res.clear();
+    for (index = 0; index < faces.size(); index++) {
+        min = getYMin(faces[index]);
+        pairList.push_back(std::make_pair(min, index));
+    }
+    sort(pairList.begin(), pairList.end(),std::greater<std::pair<float,int>>());
+//    sort(pairList.begin(), pairList.end());
+    for (i = 0 ; i < faces.size(); i++){
+        res.push_back(pairList[i].second);
+    }
+    return res;
+}
+std::vector<int> Polygon::sortX() {
+    int i, index;
+    float min;
+    std::vector<std::pair<float, int>> pairList;
+    pairList.clear();
+    std::vector<int> res;
+    res.clear();
+
+    for (index = 0; index < faces.size(); index++) {
+        min = getXMin(faces[index]);
+        pairList.push_back(std::make_pair(min, index));
+    }
+    sort(pairList.begin(), pairList.end(),std::greater<std::pair<float,int>>());
+//    sort(pairList.begin(), pairList.end());
+    for (i = 0 ; i < faces.size(); i++){
+        res.push_back(pairList[i].second);
+//        std::cout<<pairList[i].second<<std::endl;
+    }
+    return res;
 }
 
 

@@ -1,7 +1,7 @@
 /* Mediocre Matrix Math - vector.h
  *
  * Copyright 2019, Zander Adams
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -18,7 +18,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE. 
+ * SOFTWARE.
  *
  */
 
@@ -64,8 +64,7 @@ public:
     vector<N,T> operator/(const T scalar) const;
     vector<N,T>& operator*=(const T scalar);
     vector<N,T>& operator/=(const T scalar);
-    
-    T& dot(const vector<N, T> &v) const;
+    T dot(const vector<N, T> &v) const;
     vector<N,T> cross(const vector<N, T> &v) const;
     vector<N+1,T> homogeneous() const;
     float norm() const;
@@ -217,6 +216,12 @@ vector<N, T> vector<N,T>::operator*(const T scalar) const
 }
 
 template <int N, typename T>
+vector<N,T> operator*(const T scalar, const vector<N,T> &v)
+{
+    return v * scalar;
+}
+
+template <int N, typename T>
 vector<N, T> vector<N,T>::operator/(const T scalar) const
 {
     vector<N,T> vec;
@@ -248,7 +253,7 @@ vector<N, T>& vector<N,T>::operator/=(const T scalar)
 }
 
 template <int N, typename T>
-T& vector<N,T>::dot(const vector<N,T> &v) const
+T vector<N,T>::dot(const vector<N,T> &v) const
 {
     T dot = T();
     for (int i = 0; i < N; i++)
@@ -265,7 +270,7 @@ vector<N,T> vector<N,T>::cross(const vector<N,T> &v) const
     const vector<N,T> &u = (*this);
     vector<N,T> vec;
     vec.x() = u.y() * v.z() - u.z() * v.y();
-    vec.y() = u.x() * v.z() - u.z() * v.x();
+    vec.y() = -(u.x() * v.z() - u.z() * v.x());
     vec.z() = u.x() * v.y() - u.y() * v.x();
     return vec;
 }

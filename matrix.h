@@ -1,7 +1,7 @@
 /* Mediocre Matrix Math - matrix.h
  *
  * Copyright 2019, Zander Adams
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -18,7 +18,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE. 
+ * SOFTWARE.
  *
  */
 
@@ -59,7 +59,7 @@ public:
     matrix<M,N,T> transpose() const;
     matrix<M-1,N-1,T> getCofactor(const int i, const int j) const;
 
-    // Static constructor for an MxN 
+    // Static constructor for an MxN
     static constexpr matrix<M,N,T> identity();
 };
 
@@ -213,10 +213,19 @@ T determinant(const matrix<M,N,T> &m)
         {
             auto C = m.getCofactor(0, j);
             int sgn = (j%2) ? -1 : 1;
-            det += m.index(0, j) * sgn * determinant(C); 
+            det += m.index(0, j) * sgn * determinant(C);
         }
     }
     return det;
+}
+
+template <typename T>
+matrix<2,2,T> inverse(const matrix<2,2,T> &m)
+{
+    matrix<2,2,T> inv{
+        m.index(1,1), -m.index(0,1),
+        -m.index(1,0), m.index(0,0)};
+    return inv * (1/determinant(m));
 }
 
 template <int M, int N, typename T>
