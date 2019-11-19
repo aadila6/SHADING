@@ -1,5 +1,6 @@
 
 #include "Geometry.h"
+#include <algorithm>
 //TODO: POLYGON
 Polygon::Polygon(std::vector<Point> vert, std::vector<Face> faces, std::vector<float>specs) {
     this -> count = vert.size();
