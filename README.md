@@ -10,7 +10,7 @@ Step 2: ./main
 Step 3: Determind which file to read.  
 Which file would you like to read and see?   
 Cube_and_icosahedron file Enter 'c'  
-Bunny file Enter 'b'. 
+Bunny file Enter 'b'   
 Your choice is:  (Type in 'c' or 'b' for reading the file input).  
 
 Step 4:  
