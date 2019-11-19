@@ -68,7 +68,7 @@ void goShading(Point a, Point b, Point c, char mode, vec3f fn, float spe);
 Point swapCoordsyz(Point &v1);
 Point swapCoordsxz(Point &v1);
 void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode);
-int findInterceptXY(int yvalue, Point start, Point end);
+int ddaIntercepts(int yvalue, Point start, Point end);
 void setGlobalValues();
 void initGlobalValues();
 char fileG;
@@ -676,7 +676,7 @@ RGB calculateRGB(float y1, float y2, float y3, RGB color1, RGB color2)
 
 
 
-int findInterceptXY(int yvalue, Point start, Point end)
+int ddaIntercepts(int yvalue, Point start, Point end)
 {
     //check if it intercepts
     if(yvalue > rdf(max(start.point.y(), end.point.y())) || yvalue < rdf(min(start.point.y(), end.point.y())))
@@ -711,7 +711,7 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
     }
     int count = 0;
     int ymax, ymin;
-    std::vector<int> interceptions;
+    std::vector<int> records;
     std::vector<RGB> rgbs;
     ymax = rdf(max(max(p1.point.y(),p2.point.y()),p3.point.y()));
     ymin = rdf(min(min(p1.point.y(),p2.point.y()),p3.point.y()));
@@ -728,87 +728,87 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
     int lol = 0;
     for(int i=ymin; i<ymax; i++){
         int x = 0;
-        x = findInterceptXY(i, p1, p2);
+        x = ddaIntercepts(i, p1, p2);
         RGB temp = calculateRGB(p1.point.y(),p2.point.y(),i,p1.intensity,p2.intensity);
         if(phongSwitch){
             temp = calculateRGB(p1.point.y(),p2.point.y(),i,one.phongrgb,two.phongrgb);
         }
         if(x!= -1){
             bool found = false;
-            for(int k = 0; k<interceptions.size();k++){
-                if(interceptions[k] == x){
+            for(int k = 0; k<records.size();k++){
+                if(records[k] == x){
                     found = true;
                     break;
                 }
             }
             if(!found){
                 int h = 0;
-                for(int h = 0; h<interceptions.size();h++){
-                    if(x<interceptions[h]){
+                for(int h = 0; h<records.size();h++){
+                    if(x<records[h]){
                         break;
                     }
                 }
-                interceptions.insert(interceptions.begin()+h,x);
+                records.insert(records.begin()+h,x);
                 rgbs.insert(rgbs.begin() + h, temp);
             }
         }
         
-        x = findInterceptXY(i, p1, p3);
+        x = ddaIntercepts(i, p1, p3);
         temp = calculateRGB(p1.point.y(),p3.point.y(),i,p1.intensity,p3.intensity);
         if(phongSwitch){
             temp = calculateRGB(p1.point.y(),p3.point.y(),i,one.phongrgb,three.phongrgb);
         }
         if(x!= -1){
             bool found = false;
-            for(int k = 0; k<interceptions.size();k++){
-                if(interceptions[k] == x){
+            for(int k = 0; k<records.size();k++){
+                if(records[k] == x){
                     found = true;
                     break;
                 }
             }
             if(!found){
                 int h = 0;
-                for(int h = 0; h<interceptions.size();h++){
-                    if(x<interceptions[h]){
+                for(int h = 0; h<records.size();h++){
+                    if(x<records[h]){
                         break;
                     }
                 }
-                interceptions.insert(interceptions.begin()+h,x);
+                records.insert(records.begin()+h,x);
                 rgbs.insert(rgbs.begin() + h, temp);
             }
         }
         
-        x = findInterceptXY(i, p2, p3);
+        x = ddaIntercepts(i, p2, p3);
         temp = calculateRGB(p2.point.y(),p3.point.y(),i,p2.intensity,p3.intensity);
         if(phongSwitch){
             temp = calculateRGB(p2.point.y(),p3.point.y(),i,two.phongrgb,three.phongrgb);
         }
         if(x!= -1){
             bool found = false;
-            for(int k = 0; k<interceptions.size();k++){
-                if(interceptions[k] == x){
+            for(int k = 0; k<records.size();k++){
+                if(records[k] == x){
                     found = true;
                     break;
                 }
             }
             if(!found){
                 int h = 0;
-                for(int h = 0; h<interceptions.size();h++){
-                    if(x<interceptions[h]){
+                for(int h = 0; h<records.size();h++){
+                    if(x<records[h]){
                         break;
                     }
                 }
-                interceptions.insert(interceptions.begin()+h,x);
+                records.insert(records.begin()+h,x);
                 rgbs.insert(rgbs.begin() + h, temp);
             }
         }
         //开始画
-        if (interceptions.size() == 1){
+        if (records.size() == 1){
             lol = 1;
             if(mode == 'y'){
                 if(htSwitch){
                     if(lol==0){
-                        Point la(vec3f(interceptions[0], i,0)/3,rgbs[0]);
+                        Point la(vec3f(records[0], i,0)/3,rgbs[0]);
                         drawMegaPixel(la);
                     }else if(lol == 1){
                         lol++;
@@ -816,20 +816,20 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                         lol = 0;
                     }
                 }else{
-                    draw_pix(interceptions[0]*.5, i*.5+0.5*WINDOW_HEIGHT, rgbs[0]);
+                    draw_pix(records[0]*.5, i*.5+0.5*WINDOW_HEIGHT, rgbs[0]);
                 }
             }else if(mode == 'z'){
                 if(htSwitch){
-                    Point la(vec3f(interceptions[0]*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT,0)/3,rgbs[0]);
+                    Point la(vec3f(records[0]*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT,0)/3,rgbs[0]);
                     drawMegaPixel(la);
                 }else{
-                    draw_pix(interceptions[0]*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT, rgbs[0]);
+                    draw_pix(records[0]*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT, rgbs[0]);
                 }
             }
             else{
                 if(htSwitch){
                     if(lol==0){
-                        Point la(vec3f(interceptions[0]*.5, i*.5,0),rgbs[0]);
+                        Point la(vec3f(records[0]*.5, i*.5,0),rgbs[0]);
                         drawMegaPixel(la);
                     }else if(lol == 1){
                         lol++;
@@ -837,39 +837,39 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                         lol = 0;
                     }
                 }else{
-                    draw_pix(interceptions[0]*.5, i*.5, rgbs[0]);
+                    draw_pix(records[0]*.5, i*.5, rgbs[0]);
                 }
             }
         }
         
-        else if (interceptions.size() == 2)
+        else if (records.size() == 2)
         {
-            //            glm::vec3 rgb_between = glm::vec3(0);
+            //            glm::vec3 colorbtw = glm::vec3(0);
             int dx;
             int start,end;
-            dx = interceptions[1] - interceptions[0];
+            dx = records[1] - records[0];
             lol = 1;
             if(dx<0){
-                start = interceptions[1];
-                end = interceptions[0];
+                start = records[1];
+                end = records[0];
                 count++;
 //                std::cout<<"dx<0!!!!"<<std::endl;
             }else{
-                start = interceptions[0];
-                end = interceptions[1];
+                start = records[0];
+                end = records[1];
             }
             
             for (int k = start; k <= end; k++)
             {
                 //linear interpolation
-                RGB rgb_between;
-                rgb_between.r= (interceptions[1] - k) * 1.0f / (dx * 1.0f) * rgbs[0].r + (k - interceptions[0]) * 1.0f / (dx * 1.0f) * rgbs[1].r;
-                rgb_between.g= (interceptions[1] - k) * 1.0f / (dx * 1.0f) * rgbs[0].g + (k - interceptions[0]) * 1.0f / (dx * 1.0f) * rgbs[1].g;
-                rgb_between.b= (interceptions[1] - k) * 1.0f / (dx * 1.0f) * rgbs[0].b + (k - interceptions[0]) * 1.0f / (dx * 1.0f) * rgbs[1].b;
+                RGB colorbtw;
+                colorbtw.r= (records[1] - k) * 1.0f / (dx * 1.0f) * rgbs[0].r + (k - records[0]) * 1.0f / (dx * 1.0f) * rgbs[1].r;
+                colorbtw.g= (records[1] - k) * 1.0f / (dx * 1.0f) * rgbs[0].g + (k - records[0]) * 1.0f / (dx * 1.0f) * rgbs[1].g;
+                colorbtw.b= (records[1] - k) * 1.0f / (dx * 1.0f) * rgbs[0].b + (k - records[0]) * 1.0f / (dx * 1.0f) * rgbs[1].b;
                 if(mode == 'y'){
                     if(htSwitch){
                         if(lol==0){
-                            Point la(vec3f(k*.5,i*.5+0.5*WINDOW_HEIGHT,0)/3,rgb_between);
+                            Point la(vec3f(k*.5,i*.5+0.5*WINDOW_HEIGHT,0)/3,colorbtw);
                             drawMegaPixel(la);
                         }else if(lol == 1){
                             lol++;
@@ -877,13 +877,13 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                             lol = 0;
                         }
                     }else{
-                        draw_pix(k*.5, i*.5+0.5*WINDOW_HEIGHT, rgb_between);
+                        draw_pix(k*.5, i*.5+0.5*WINDOW_HEIGHT, colorbtw);
                     }
                     
                 }else if(mode == 'z'){
                     if(htSwitch){
                         if(lol==0){
-                            Point la(vec3f(k*.5+.5*WINDOW_WIDTH,i*.5+0.5*WINDOW_HEIGHT,0)/3,rgb_between);
+                            Point la(vec3f(k*.5+.5*WINDOW_WIDTH,i*.5+0.5*WINDOW_HEIGHT,0)/3,colorbtw);
                             drawMegaPixel(la);
                         }else if(lol == 1){
                             lol++;
@@ -891,12 +891,12 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                             lol = 0;
                         }
                     }else{
-                        draw_pix(k*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT, rgb_between);
+                        draw_pix(k*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT, colorbtw);
                     }
                 }else{
                     if(htSwitch){
                         if(lol==0){
-                            Point la(vec3f(k*.5,i*.5,0)/3,rgb_between);
+                            Point la(vec3f(k*.5,i*.5,0)/3,colorbtw);
                             drawMegaPixel(la);
                         }else if(lol == 1){
                             lol++;
@@ -904,36 +904,36 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                             lol = 0;
                         }
                     }else{
-                        draw_pix(k*.5, i*.5, rgb_between);
+                        draw_pix(k*.5, i*.5, colorbtw);
                     }
                 }
             }
         }else{
             int dx;
             int start,end;
-            dx = interceptions[2] - interceptions[0];
+            dx = records[2] - records[0];
             lol = 1;
             if(dx<0){
-                start = interceptions[2];
-                end = interceptions[0];
+                start = records[2];
+                end = records[0];
                 count++;
 //                std::cout<<"dx<0!!!!"<<std::endl;
             }else{
-                start = interceptions[0];
-                end = interceptions[2];
+                start = records[0];
+                end = records[2];
             }
             for (int k = start; k <= end; k++)
             {
                 //linear interpolation
-                RGB rgb_between;
-                rgb_between.r = (interceptions[2] - k) * 1.0f / (dx * 1.0f) * rgbs[0].r + (k - interceptions[0]) * 1.0f / (dx * 1.0f) * rgbs[2].r;
-                rgb_between.g = (interceptions[2] - k) * 1.0f / (dx * 1.0f) * rgbs[0].g + (k - interceptions[0]) * 1.0f / (dx * 1.0f) * rgbs[2].g;
-                rgb_between.b = (interceptions[2] - k) * 1.0f / (dx * 1.0f) * rgbs[0].b + (k - interceptions[0]) * 1.0f / (dx * 1.0f) * rgbs[2].b;
+                RGB colorbtw;
+                colorbtw.r = (records[2] - k) * 1.0f / (dx * 1.0f) * rgbs[0].r + (k - records[0]) * 1.0f / (dx * 1.0f) * rgbs[2].r;
+                colorbtw.g = (records[2] - k) * 1.0f / (dx * 1.0f) * rgbs[0].g + (k - records[0]) * 1.0f / (dx * 1.0f) * rgbs[2].g;
+                colorbtw.b = (records[2] - k) * 1.0f / (dx * 1.0f) * rgbs[0].b + (k - records[0]) * 1.0f / (dx * 1.0f) * rgbs[2].b;
 //                int lol = 0;
                 if(mode == 'y'){
                     if(htSwitch){
                         if(lol==0){
-                            Point la(vec3f(k*.5,i*.5+0.5*WINDOW_HEIGHT,0)/3,rgb_between);
+                            Point la(vec3f(k*.5,i*.5+0.5*WINDOW_HEIGHT,0)/3,colorbtw);
                             drawMegaPixel(la);
                         }else if(lol == 1){
                             lol++;
@@ -941,13 +941,13 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                             lol = 0;
                         }
                     }else{
-                        draw_pix(k*.5, i*.5+0.5*WINDOW_HEIGHT, rgb_between);
+                        draw_pix(k*.5, i*.5+0.5*WINDOW_HEIGHT, colorbtw);
                     }
                     
                 }else if(mode == 'z'){
                     if(htSwitch){
                         if(lol==0){
-                            Point la(vec3f(k*.5+.5*WINDOW_WIDTH,i*.5+0.5*WINDOW_HEIGHT,0)/3,rgb_between);
+                            Point la(vec3f(k*.5+.5*WINDOW_WIDTH,i*.5+0.5*WINDOW_HEIGHT,0)/3,colorbtw);
                             drawMegaPixel(la);
                         }else if(lol == 1){
                             lol++;
@@ -955,12 +955,12 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                             lol = 0;
                         }
                     }else{
-                        draw_pix(k*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT, rgb_between);
+                        draw_pix(k*.5+.5*WINDOW_WIDTH, i*.5+0.5*WINDOW_HEIGHT, colorbtw);
                     }
                 }else{
                     if(htSwitch){
                         if(lol==0){
-                            Point la(vec3f(k*.5,i*.5,0)/3,rgb_between);
+                            Point la(vec3f(k*.5,i*.5,0)/3,colorbtw);
                             drawMegaPixel(la);
                         }else if(lol == 1){
                             lol++;
@@ -968,12 +968,12 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                             lol = 0;
                         }
                     }else{
-                        draw_pix(k*.5, i*.5, rgb_between);
+                        draw_pix(k*.5, i*.5, colorbtw);
                     }
                 }
             }
         }
-        interceptions.clear();
+        records.clear();
         rgbs.clear();
         lol = 1;
     }
