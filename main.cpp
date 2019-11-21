@@ -777,6 +777,7 @@ void goroShading(Point p1, Point p2, Point p3,vec3f fn, float spect, char mode){
                 rgbs.insert(rgbs.begin() + h, temp);
             }
         }
+
         
         x = ddaIntercepts(i, p2, p3);
         temp = calculateRGB(p2.point.y(),p3.point.y(),i,p2.intensity,p3.intensity);
